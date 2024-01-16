@@ -7,6 +7,7 @@
         <th>Task</th>
         <th>Mark</th>
         <th>Completed</th>
+        <th>Delete</th>
       </tr>
     </thead>
     <tbody>
@@ -14,6 +15,7 @@
         <td (click)="displayTodo(todo)">{{todo.task}}</td>
         <td> <input [(ngModel)]="todo.completed" type="checkbox" name="completed">  </td>
         <td>{{todo.completed}}</td>
+        <td><button (click)="deleteTodo(todo.id)" class="btn btn-danger">X</button></td>
       </tr>
     </tbody>
   </table>

@@ -1,22 +1,23 @@
-import { Component } from '@angular/core';
-import { Todo } from '../../models/todo';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from "@angular/core";
+import { Todo } from "../../models/todo";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { TodoService } from "../../services/todo.service";
 
 @Component({
-  selector: 'app-todo-list',
+  selector: "app-todo-list",
   standalone: true,
-  imports: [ CommonModule, FormsModule ],
-  templateUrl: './todo-list.component.html',
-  styleUrl: './todo-list.component.css'
+  imports: [CommonModule, FormsModule],
+  templateUrl: "./todo-list.component.html",
+  styleUrl: "./todo-list.component.css",
 })
-export class TodoListComponent {
-  title = 'ngTodo';
+export class TodoListComponent implements OnInit {
+  title = "ngTodo";
 
   todos: Todo[] = [
-    new Todo(1, 'Go round mums', '', false),
-    new Todo(2, 'Get Liz back', '', false),
-    new Todo(3, 'Sort life out', '', false)
+    new Todo(1, "Go round mums", "", false),
+    new Todo(2, "Get Liz back", "", false),
+    new Todo(3, "Sort life out", "", false),
   ];
 
   selected: Todo | null = null;
@@ -24,6 +25,11 @@ export class TodoListComponent {
   editTodo: Todo | null = null;
 
   /////////////////
+
+  ngOnInit(): void {
+    this.todos = this.todoService.index();
+  }
+  constructor(private todoService: TodoService) {}
 
   getTodoCount(): number {
     return this.todos.length;
@@ -37,17 +43,10 @@ export class TodoListComponent {
     this.selected = null;
   }
 
-  addTodo(todo:Todo) {
-    todo.id = this.generateId();
-    todo.completed = false;
-    todo.description ='';
-    this.todos.push(todo);
+  addTodo(todo: Todo) {
+    this.todoService.create(todo);
+    this.todos = this.todoService.index();
     this.newTodo = new Todo();
-    // this.todos.push({...todo});
-  }
-
-  generateId() {
-    return this.todos[this.todos.length - 1].id + 1;
   }
 
   setEditTodo() {
@@ -56,15 +55,13 @@ export class TodoListComponent {
 
   updateTodo(todo: Todo) {
     console.log(todo);
-    for (let i = 0; i < this.todos.length; i++) {
-      if ( this.todos[i].id === todo.id) {
-        this.todos[i].task = todo.task;
-        this.todos[i].description = todo.description;
-        this.todos[i].completed = todo.completed;
-        break;
-      }
-    }
+    this.todoService.update(todo);
+    this.todos = this.todoService.index();
     this.editTodo = null;
   }
 
+  deleteTodo(todoId: number) {
+    this.todoService.destroy(todoId);
+    this.todos = this.todoService.index();
+  }
 }
