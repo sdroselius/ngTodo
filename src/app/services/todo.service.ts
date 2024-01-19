@@ -1,50 +1,84 @@
 import { Injectable } from '@angular/core';
 import { Todo } from '../models/todo';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
+import { DatePipe } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TodoService {
-  todos: Todo[] = [
-    new Todo(1, 'Go round mums', '', false),
-    new Todo(2, 'Get Liz back', '', false),
-    new Todo(3, 'Sort life out', '', false)
-  ];
 
-  constructor() { }
+  private baseUrl = 'http://localhost:8085/';
+  private url = this.baseUrl + 'api/todos';
 
-  index() {
-    return [...this.todos];
+  constructor(
+    private http: HttpClient,
+    private datePipe: DatePipe
+  ) { }
+
+  index(): Observable<Todo[]> {
+    return this.http.get<Todo[]>(this.url).pipe(
+      catchError((err: any) => {
+        console.log(err);
+        return throwError(
+          () => new Error('TodoService.index(): error retrieving todos: ' + err)
+        );
+      })
+    );
   }
 
-  generateId() {
-    return this.todos[this.todos.length - 1].id + 1;
+  show(todoId: number): Observable<Todo> {
+    return this.http.get<Todo>(this.url + '/' + todoId).pipe(
+      catchError((err: any) => {
+        console.log(err);
+        return throwError(
+          () => new Error('TodoService.show(): error retrieving todo: ' + err)
+        );
+      })
+    );
   }
 
-  create(newTodo: Todo) {
-    newTodo.id = this.generateId();
+  create(newTodo: Todo): Observable<Todo> {
     newTodo.completed = false;
     newTodo.description ='';
-    this.todos.push(newTodo);
+    return this.http.post<Todo>(this.url, newTodo).pipe(
+      catchError((err: any) => {
+        console.log(err);
+        return throwError(
+          () => new Error('TodoService.create(): error creating todo: ' + err)
+        );
+      })
+    );
   }
 
-  update(todo: Todo) {
-    for (let i = 0; i < this.todos.length; i++) {
-      if (this.todos[i].id === todo.id) {
-        this.todos[i].task = todo.task;
-        this.todos[i].description = todo.description;
-        this.todos[i].completed = todo.completed;
-        break;
-      }
+  update(todo: Todo): Observable<Todo> {
+    if (todo.completed) {
+      todo.completeDate = this.datePipe.transform(Date.now(), 'shortDate')
     }
+    else {
+      todo.completeDate = '';
+    }
+    return this.http.put<Todo>(`${this.url}/${todo.id}`, todo).pipe(
+      catchError((err: any) => {
+        console.log(err);
+        return throwError(
+          () => new Error('TodoService.update(): error on PUT: ' + err)
+        );
+      })
+    );
   }
 
-  destroy(todoId: number) {
-    for (let i = 0; i < this.todos.length; i++) {
-      if (this.todos[i].id === todoId) {
-        this.todos.splice(i,1);
-        break;
-      }
-    }
+  destroy(todoId: number): Observable<void> {
+   // return this.http.delete<void>(this.url + "/" + todoId).pipe(
+      return this.http.delete<void>(`${this.url}/${todoId}`).pipe(
+      catchError((err: any) => {
+        console.log(err);
+        return throwError(
+          () => new Error('TodoService.delete(): error on DELETE: ' + err)
+        );
+      })
+    );
   }
+
 }

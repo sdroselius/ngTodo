@@ -3,17 +3,20 @@ export class Todo {
   task: string;
   description: string;
   completed: boolean;
+  completeDate: string | null;
 
   constructor(
     id: number = 0,
     task: string = '',
     description: string = '',
-    completed: boolean = false
+    completed: boolean = false,
+    completeDate: string | null = null
   ) {
     this.id = id;
     this.task = task;
     this.description = description;
     this.completed = completed;
+    this.completeDate = completeDate;
   }
 
 }
